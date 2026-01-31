@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'screens/game_screen.dart';
 
 void main() {
   runApp(const AsteroidsApp());
@@ -10,11 +10,9 @@ class AsteroidsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Asteroids Game',
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(brightness: Brightness.dark, primarySwatch: Colors.blue),
-      home: const HomeScreen(),
+      home: GameScreen(),
     );
   }
 }
