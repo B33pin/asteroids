@@ -86,15 +86,23 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
           Positioned(
-            top: 4,
-            right: 4,
-            child: IconButton(
-              icon: const Icon(
-                CupertinoIcons.xmark,
-                color: Colors.white,
-                size: 18,
-              ),
-              onPressed: () => Navigator.pop(context),
+            top: 16,
+            left: 16,
+            child: ListenableBuilder(
+              listenable: gameController,
+              builder: (context, child) {
+                final elapsed = gameController.elapsedTime;
+                final minutes = elapsed.inMinutes;
+                final seconds = elapsed.inSeconds % 60;
+                return Text(
+                  '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              },
             ),
           ),
           ListenableBuilder(
@@ -103,7 +111,7 @@ class _GameScreenState extends State<GameScreen> {
               if (!gameController.isGameOver) return const SizedBox.shrink();
 
               return Container(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -114,6 +122,14 @@ class _GameScreenState extends State<GameScreen> {
                           color: Colors.white,
                           fontSize: 48,
                           fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'You lasted ${gameController.elapsedTime.inMinutes} minutes ${gameController.elapsedTime.inSeconds % 60} seconds',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 20,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -138,6 +154,18 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               );
             },
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: IconButton(
+              icon: const Icon(
+                CupertinoIcons.xmark,
+                color: Colors.white,
+                size: 18,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
         ],
       ),

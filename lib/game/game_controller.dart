@@ -13,6 +13,14 @@ class GameController extends ChangeNotifier {
   final double maxSpeed;
   final Random _random = Random();
   bool isGameOver = false;
+  DateTime? _startTime;
+  Duration _elapsedTime = Duration.zero;
+
+  Duration get elapsedTime => isGameOver
+      ? _elapsedTime
+      : (_startTime != null
+            ? DateTime.now().difference(_startTime!)
+            : Duration.zero);
 
   GameController({
     required this.particleCount,
@@ -25,6 +33,8 @@ class GameController extends ChangeNotifier {
   void init() {
     player = Player(position: const Offset(400, 300));
     _spawnParticles();
+    _startTime = DateTime.now();
+    _elapsedTime = Duration.zero;
   }
 
   void _spawnParticles() {
@@ -188,6 +198,9 @@ class GameController extends ChangeNotifier {
 
       if (distance < (player.radius + particle.radius)) {
         isGameOver = true;
+        if (_startTime != null) {
+          _elapsedTime = DateTime.now().difference(_startTime!);
+        }
         notifyListeners();
         return;
       }
