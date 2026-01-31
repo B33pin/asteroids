@@ -5,8 +5,15 @@ import '../models/player.dart';
 /// Controller for managing game state
 class GameController extends ChangeNotifier {
   late Player player;
+  final int particleCount;
+  final double minSpeed;
+  final double maxSpeed;
 
-  GameController() {
+  GameController({
+    required this.particleCount,
+    required this.minSpeed,
+    required this.maxSpeed,
+  }) {
     init();
   }
 
