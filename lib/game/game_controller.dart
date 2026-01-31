@@ -12,6 +12,7 @@ class GameController extends ChangeNotifier {
   final double minSpeed;
   final double maxSpeed;
   final Random _random = Random();
+  bool isGameOver = false;
 
   GameController({
     required this.particleCount,
@@ -34,33 +35,45 @@ class GameController extends ChangeNotifier {
   }
 
   void _createParticle() {
-    final x = _random.nextDouble() * GameConstants.screenWidth;
-    final y = _random.nextDouble() * GameConstants.screenHeight;
+    double x, y;
     final radius =
         GameConstants.minParticleSize +
         _random.nextDouble() *
             (GameConstants.maxParticleSize - GameConstants.minParticleSize);
+
+    // keep spawning until we find a position that's not too close to player
+    do {
+      x = _random.nextDouble() * GameConstants.screenWidth;
+      y = _random.nextDouble() * GameConstants.screenHeight;
+
+      final dx = x - player.position.dx;
+      final dy = y - player.position.dy;
+      final distance = sqrt(dx * dx + dy * dy);
+
+      // ensure asteroid spawns at least 100 pixels away from player
+      if (distance > 100 + radius + player.radius) {
+        break;
+      }
+    } while (true);
 
     final speed = minSpeed + _random.nextDouble() * (maxSpeed - minSpeed);
     final angle = _random.nextDouble() * 2 * pi;
     final velocity = Offset(cos(angle) * speed, sin(angle) * speed);
 
     particles.add(
-      Particle.create(
-        position: Offset(x, y),
-        velocity: velocity,
-        radius: radius,
-        random: _random,
-      ),
+      Particle(position: Offset(x, y), velocity: velocity, radius: radius),
     );
   }
 
   void update(double dt) {
+    if (isGameOver) return;
+
     for (var particle in particles) {
       particle.update(dt);
     }
 
     _handleScreenBoundaries();
+    _checkCollisions();
 
     notifyListeners();
   }
@@ -165,6 +178,25 @@ class GameController extends ChangeNotifier {
       cos(newAngle) * currentSpeed,
       sin(newAngle) * currentSpeed,
     );
+  }
+
+  void _checkCollisions() {
+    for (var particle in particles) {
+      final dx = player.position.dx - particle.position.dx;
+      final dy = player.position.dy - particle.position.dy;
+      final distance = sqrt(dx * dx + dy * dy);
+
+      if (distance < (player.radius + particle.radius)) {
+        isGameOver = true;
+        notifyListeners();
+        return;
+      }
+    }
+  }
+
+  void restart() {
+    isGameOver = false;
+    init();
   }
 
   void updatePlayerPosition(Offset position) {
