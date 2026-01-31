@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../models/particle.dart';
 
-/// Handles rendering of particles as asteroids
 class ParticleRenderer {
   static void render(Canvas canvas, Particle particle) {
     final fillPaint = Paint()
@@ -14,25 +13,35 @@ class ParticleRenderer {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
-    _drawAsteroid(canvas, particle, fillPaint, strokePaint);
+    if (particle.shape == ParticleShape.circle) {
+      _drawCircle(canvas, particle, fillPaint, strokePaint);
+    } else {
+      _drawPolygon(canvas, particle, fillPaint, strokePaint);
+    }
   }
 
-  static void _drawAsteroid(
+  static void _drawCircle(
+    Canvas canvas,
+    Particle particle,
+    Paint fillPaint,
+    Paint strokePaint,
+  ) {
+    canvas.drawCircle(particle.position, particle.radius, fillPaint);
+    canvas.drawCircle(particle.position, particle.radius, strokePaint);
+  }
+
+  static void _drawPolygon(
     Canvas canvas,
     Particle particle,
     Paint fillPaint,
     Paint strokePaint,
   ) {
     final path = Path();
-    final vertices = 8;
-    final random = Random(
-      particle.position.dx.toInt() + particle.position.dy.toInt(),
-    );
+    final vertices = particle.shapeData.length;
 
-    // For creating slightly irregular asteroid shape
     for (int i = 0; i < vertices; i++) {
       final angle = (i * 2 * pi / vertices);
-      final radiusVariation = 0.75 + random.nextDouble() * 0.25;
+      final radiusVariation = particle.shapeData[i];
       final x =
           particle.position.dx + cos(angle) * particle.radius * radiusVariation;
       final y =
@@ -47,7 +56,6 @@ class ParticleRenderer {
     path.close();
 
     canvas.drawPath(path, fillPaint);
-
     canvas.drawPath(path, strokePaint);
   }
 }

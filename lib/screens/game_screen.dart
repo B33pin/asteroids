@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../game/level_controller.dart';
+import '../game/game_controller.dart';
 import '../widgets/game_painter.dart';
+import '../constants/game_constants.dart';
 
 class GameScreen extends StatefulWidget {
   final int particleCount;
@@ -21,6 +23,7 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late GameController gameController;
+  late Timer gameLoop;
 
   @override
   void initState() {
@@ -30,10 +33,22 @@ class _GameScreenState extends State<GameScreen> {
       minSpeed: widget.minSpeed,
       maxSpeed: widget.maxSpeed,
     );
+    _startGameLoop();
+  }
+
+  void _startGameLoop() {
+    const frameDuration = Duration(
+      milliseconds: 1000 ~/ GameConstants.targetFPS,
+    );
+    gameLoop = Timer.periodic(frameDuration, (timer) {
+      final dt = frameDuration.inMilliseconds / 1000.0;
+      gameController.update(dt);
+    });
   }
 
   @override
   void dispose() {
+    gameLoop.cancel();
     gameController.dispose();
     super.dispose();
   }

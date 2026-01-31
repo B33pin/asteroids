@@ -1,5 +1,8 @@
-/// Game configuration constants
 class GameConstants {
+  // Screen dimensions
+  static const double screenWidth = 800.0;
+  static const double screenHeight = 600.0;
+
   // Particle configuration
   static const int defaultParticleCount = 20;
   static const double minParticleSize = 10.0;
@@ -10,6 +13,9 @@ class GameConstants {
   // Player configuration
   static const double playerSize = 10.0;
 
-  // Screen behavior
-  static const bool screenWrap = true; // true = wrap, false = respawn
+  // if true, asteroids wrap around edges. if false, they bounce
+  static const bool screenWrap = true;
+
+  // Game loop
+  static const int targetFPS = 60;
 }
