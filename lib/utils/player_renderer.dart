@@ -32,7 +32,7 @@ class PlayerRenderer {
 
   static Offset _rotatePoint(Offset center, double x, double y, double angle) {
     // rotate point (x, y) around center by angle
-    final cosA = cos(angle + pi / 2); // offset by 90° so 0 = up
+    final cosA = cos(angle + pi / 2);
     final sinA = sin(angle + pi / 2);
     return Offset(
       center.dx + x * cosA - y * sinA,

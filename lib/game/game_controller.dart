@@ -3,11 +3,13 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/player.dart';
 import '../models/particle.dart';
+import '../models/bullet.dart';
 import '../constants/game_constants.dart';
 
 class GameController extends ChangeNotifier {
   late Player player;
   List<Particle> particles = [];
+  List<Bullet> bullets = [];
   final int particleCount;
   final double minSpeed;
   final double maxSpeed;
@@ -40,31 +42,58 @@ class GameController extends ChangeNotifier {
   void _spawnParticles() {
     particles.clear();
     for (int i = 0; i < particleCount; i++) {
-      _createParticle();
+      _createParticle(fromEdge: false);
     }
   }
 
-  void _createParticle() {
+  void _createParticle({bool fromEdge = true}) {
     double x, y;
     final radius =
         GameConstants.minParticleSize +
         _random.nextDouble() *
             (GameConstants.maxParticleSize - GameConstants.minParticleSize);
 
-    // keep spawning until we find a position that's not too close to player
-    do {
-      x = _random.nextDouble() * GameConstants.screenWidth;
-      y = _random.nextDouble() * GameConstants.screenHeight;
+    if (fromEdge) {
+      // spawn from off-screen edge
+      final edge = _random.nextInt(4); // 0=top, 1=right, 2=bottom, 3=left
 
-      final dx = x - player.position.dx;
-      final dy = y - player.position.dy;
-      final distance = sqrt(dx * dx + dy * dy);
-
-      // ensure asteroid spawns at least 100 pixels away from player
-      if (distance > 100 + radius + player.radius) {
-        break;
+      switch (edge) {
+        case 0: // top
+          x = _random.nextDouble() * GameConstants.screenWidth;
+          y = -radius - 20;
+          break;
+        case 1: // right
+          x = GameConstants.screenWidth + radius + 20;
+          y = _random.nextDouble() * GameConstants.screenHeight;
+          break;
+        case 2: // bottom
+          x = _random.nextDouble() * GameConstants.screenWidth;
+          y = GameConstants.screenHeight + radius + 20;
+          break;
+        case 3: // left
+          x = -radius - 20;
+          y = _random.nextDouble() * GameConstants.screenHeight;
+          break;
+        default:
+          x = 0;
+          y = 0;
       }
-    } while (true);
+    } else {
+      // initial spawn anywhere on screen (away from player)
+      do {
+        x = _random.nextDouble() * GameConstants.screenWidth;
+        y = _random.nextDouble() * GameConstants.screenHeight;
+
+        final dx = x - player.position.dx;
+        final dy = y - player.position.dy;
+        final distance = sqrt(dx * dx + dy * dy);
+
+        // ensure asteroid spawns at least 100 pixels away from player
+        if (distance > 100 + radius + player.radius) {
+          break;
+        }
+      } while (true);
+    }
 
     final speed = minSpeed + _random.nextDouble() * (maxSpeed - minSpeed);
     final angle = _random.nextDouble() * 2 * pi;
@@ -82,8 +111,14 @@ class GameController extends ChangeNotifier {
       particle.update(dt);
     }
 
+    for (var bullet in bullets) {
+      bullet.update(dt);
+    }
+
     _handleScreenBoundaries();
     _checkCollisions();
+    _checkBulletCollisions();
+    _removeOffScreenBullets();
 
     notifyListeners();
   }
@@ -207,8 +242,52 @@ class GameController extends ChangeNotifier {
     }
   }
 
+  void shoot() {
+    bullets.add(
+      Bullet(position: player.position, speed: 400.0, angle: player.rotation),
+    );
+    notifyListeners();
+  }
+
+  void _checkBulletCollisions() {
+    final bulletsToRemove = <Bullet>[];
+    final particlesToRemove = <Particle>[];
+
+    for (var bullet in bullets) {
+      for (var particle in particles) {
+        final dx = bullet.position.dx - particle.position.dx;
+        final dy = bullet.position.dy - particle.position.dy;
+        final distance = sqrt(dx * dx + dy * dy);
+
+        if (distance < (bullet.radius + particle.radius)) {
+          bulletsToRemove.add(bullet);
+          particlesToRemove.add(particle);
+          break;
+        }
+      }
+    }
+
+    bullets.removeWhere((b) => bulletsToRemove.contains(b));
+    particles.removeWhere((p) => particlesToRemove.contains(p));
+
+    // spawn new particles to maintain particle count
+    for (int i = 0; i < particlesToRemove.length; i++) {
+      _createParticle();
+    }
+  }
+
+  void _removeOffScreenBullets() {
+    bullets.removeWhere(
+      (bullet) => bullet.isOffScreen(
+        GameConstants.screenWidth,
+        GameConstants.screenHeight,
+      ),
+    );
+  }
+
   void restart() {
     isGameOver = false;
+    bullets.clear();
     init();
   }
 

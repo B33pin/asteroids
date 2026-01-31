@@ -63,24 +63,33 @@ class _GameScreenState extends State<GameScreen> {
             onPanUpdate: (details) {
               gameController.updatePlayerPosition(details.localPosition);
             },
+            onTapDown: (details) {
+              gameController.shoot();
+            },
             child: MouseRegion(
               onHover: (event) {
                 gameController.updatePlayerPosition(event.localPosition);
               },
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.black,
-                child: ListenableBuilder(
-                  listenable: gameController,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: GamePainter(
-                        player: gameController.player,
-                        particles: gameController.particles,
-                      ),
-                    );
-                  },
+              child: Listener(
+                onPointerDown: (event) {
+                  gameController.shoot();
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.black,
+                  child: ListenableBuilder(
+                    listenable: gameController,
+                    builder: (context, child) {
+                      return CustomPaint(
+                        painter: GamePainter(
+                          player: gameController.player,
+                          particles: gameController.particles,
+                          bullets: gameController.bullets,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
