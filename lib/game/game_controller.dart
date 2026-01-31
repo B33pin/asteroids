@@ -99,8 +99,21 @@ class GameController extends ChangeNotifier {
     final angle = _random.nextDouble() * 2 * pi;
     final velocity = Offset(cos(angle) * speed, sin(angle) * speed);
 
+    // 20% chance of circle, 80% irregular polygon
+    final isCircle = _random.nextDouble() < 0.2;
+    final sides = isCircle ? 0 : (5 + _random.nextInt(5)); // 5-9 sides
+    final polygonRotation = _random.nextDouble() * 2 * pi;
+
     particles.add(
-      Particle(position: Offset(x, y), velocity: velocity, radius: radius),
+      Particle(
+        position: Offset(x, y),
+        velocity: velocity,
+        radius: radius,
+        sides: sides,
+        rotation: polygonRotation,
+        isCircle: isCircle,
+        random: _random,
+      ),
     );
   }
 

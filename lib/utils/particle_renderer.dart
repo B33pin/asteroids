@@ -12,7 +12,24 @@ class ParticleRenderer {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
-    canvas.drawCircle(particle.position, particle.radius, fillPaint);
-    canvas.drawCircle(particle.position, particle.radius, strokePaint);
+    // Draw polygon shape
+    final path = Path();
+    for (int i = 0; i < particle.shapeVertices.length; i++) {
+      final vertex = particle.shapeVertices[i];
+      final worldPos = Offset(
+        particle.position.dx + vertex.dx,
+        particle.position.dy + vertex.dy,
+      );
+
+      if (i == 0) {
+        path.moveTo(worldPos.dx, worldPos.dy);
+      } else {
+        path.lineTo(worldPos.dx, worldPos.dy);
+      }
+    }
+    path.close();
+
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, strokePaint);
   }
 }
