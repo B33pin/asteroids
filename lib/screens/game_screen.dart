@@ -60,7 +60,10 @@ class _GameScreenState extends State<GameScreen> {
                   listenable: gameController,
                   builder: (context, child) {
                     return CustomPaint(
-                      painter: GamePainter(player: gameController.player),
+                      painter: GamePainter(
+                        player: gameController.player,
+                        particles: gameController.particles,
+                      ),
                     );
                   },
                 ),
